@@ -10,7 +10,7 @@ https://aaronoellis.com/
 
 * Specifically...
 
-Writing better function calls in Go
+Writing logical function calls in Go
 
 
 * But I Have Better Things to Worry About...
@@ -72,6 +72,8 @@ _AKA_keyword_arguments_in_Python_
 
 * Special Methods
 
+_AKA_magic_methods_in_Python_
+
 Allow objects to behave like built-in types
 
     Class Currency(object):
@@ -88,7 +90,7 @@ Essentially an `interface` for built-in operators!
 
 Go does not have any of these features. So how can it have any of the behaviors?
 
-Not so fast! We're clever!
+Not so fast! We're clever! And we've been given permission to screw around:
 
 "If it bothers you that Go is missing feature X, please forgive us and investigate the features that Go does have."
 
@@ -105,7 +107,7 @@ Not so fast! We're clever!
 
     Build("x")
     Build("y", 1)
-    Build("z", 1, 2, 3) // uhoh
+    Build("z", 1, 2, 3) // Wait, I only wanted one
 
 
 * Named Parameters in Go with Structs
@@ -167,8 +169,10 @@ Sure, we'll just return a runtime error on duplicates and clearly note the issue
 
 .link https://golang.org/doc/faq Anti-Fun Police AKA the Go FAQ
 
+Well, boo.
 
-* Welcome to the Semantic Treehouse of Horrors
+
+* The Treehouse of Semantic Horrors
 
 Just because we can, doesn't mean we should.
 
@@ -181,10 +185,11 @@ Are we writing English? Should we be?
 
 Or is it math?
 
-<Insert argument about the percentage that computer science is English versus Math - the Ruby and Haskell coders may start fighting - they should take it outside>
+
+Presenter notes: pause for debate over the percentage that computer science is English versus Math. If the Ruby and Haskell coders start fighting ask them to take it outside.
 
 
-* An Opinion That Will Get Me In Trouble
+* Controversial Opinion #1
 
 Code should choose a grammar and be consistent
 
@@ -213,23 +218,26 @@ If no one disagrees, I will provide counter-examples myself
 - I'm a Computer Scientist, not a Bard!
 - I use an IDE
 
+
 * Functions Are Our Verbs
 
-Understanding the purpose of a function should not require previous knowledge of:
+We're using higher order languages for readability, let's embrace it.
 
-- The type signature
-- The surrounding program
+We should be able to understand the purpose of function from either the type signature OR the context of callable.
 
 
 * Dangers of an Inconsistent Grammar
 
 English sets a bad precedent with distinguishing nouns from verbs
 
-- Pool, mine, bolt, draft, jam, bark...
+- Pool, draft, jam, bark, bolt...
 
-If our program's grammar is inconsistent we can lose track of verbs, especially when passing callables
+When our grammar is inconsistent we lose track of verbs - _especially_ when passing callables
 
-    Pass(pool) // wat
+    Pass.mine()
+    Mine.pass()
+    Pass(mine)
+    Mine(pass)
 
 
 * It's About Reducing Complexity
@@ -241,12 +249,13 @@ If our program's grammar is inconsistent we can lose track of verbs, especially 
 
 * More Constructors, Without Duplication
 
-Constructors are just functions (that's not just a statement about Go)
+Constructors are functions (that's not just a statement about Go)
 
     type User struct{ ... }
 
     NewUser(email string) (user User) {
         user.Email = email
+        // Some complex operation beyond setters
     }
 
     NewAdmin(email string) User {
@@ -263,13 +272,14 @@ Or in a package namespaced 'users'
     users.NewAdmin("email@example.com")
 
 
-* An Engineer's Counter-Argument
-
-"If it ain't broke, it doesn't have enough features yet." - Scott Adams
+* An Engineer's Lament
 
 I'll have 200 constructors!
 
 Then that's the complexity of your program, don't hide it
+
+
+"If it ain't broke, it doesn't have enough features yet." - Scott Adams
 
 
 * We're Not Playing Golf
@@ -287,6 +297,22 @@ More code can improve readability without increasing complexity
     func (issue Issue) IsClosed() bool {
         return !issue.IsOpen()
     }
+
+
+When used:
+
+    if issue.IsOpen() { ... }
+
+    if issue.IsClosed() { ... }
+
+
+* Even the Kitchen Sink?
+
+However, we should still be opinionated
+
+    obj.Length() // Returns length
+
+    obj.Size() // Alias of length - why?
 
 
 * Avoid the Boolean Trap
@@ -315,7 +341,6 @@ More code can improve readability without increasing complexity
 
 
 * Let's Bike-shed
-
 
 I have an IDE! It auto-completes! Begone savages!
 
