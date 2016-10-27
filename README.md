@@ -1,7 +1,7 @@
 Literate Go
 ===========
 
-Presentation on interfaces for [Denver Gophers](http://www.meetup.com/Denver-Go-Language-User-Group/)
+Presentation on writing better function calls for [Denver Gophers](http://www.meetup.com/Denver-Go-Language-User-Group/)
 
 View online at [go-talks.appspot.com](https://go-talks.appspot.com/github.com/aodin/literate-go/literate-go.slide)
 
