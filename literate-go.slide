@@ -1,0 +1,339 @@
+Literate Go
+27 Oct 2016
+Tags: go, golang, grammar
+
+Aaron O. Ellis
+aaron.o.ellis@gmail.com
+https://aaronoellis.com/
+@aaronoellis
+
+
+* Specifically...
+
+Writing better function calls in Go
+
+
+* But I Have Better Things to Worry About...
+
+- Performance
+- Security
+- Best Practices
+- Tooling
+- File Size
+- Dependency Management
+- Correct Data Structures
+- Bike-shedding Over Generics
+- Modularization
+- Compartmentalization
+- Antidisestablishmentarianism
+- Documentation
+
+
+* Appeal to Authority
+
+"The ratio of time spent reading versus writing is well over 10 to 1" - Robert Martin
+
+"Simplicity is the art of hiding complexity." - Rob Pike
+
+
+* Common Semantic Features
+
+*Feature*→*Behavior*
+
+- Function Overloading → Optional Arguments
+- Named Parameters → Default Arguments
+- Special Methods → Operator Overloading
+
+
+* Function Overloading
+
+Allows multiple functions of the same name as long as they vary in arity or type
+
+    Update(issue Issue)
+
+    Update(issueA, issueB Issue)
+
+    Update(page Page)
+
+
+* Named Parameters
+
+Passed parameters can be associated with a name
+
+_AKA_keyword_arguments_in_Python_
+
+
+    Issue(open=True, created=datetime.now())
+
+    Issue(**{'open': True, 'created': datetime.now()})
+
+    Issue(**kwargs)
+
+
+* Special Methods
+
+Allow objects to behave like built-in types
+
+    Class Currency(object):
+        def __add__(self, other):
+            ...
+
+    Currency(1.5, 'USD') + Currency(1, 'EUR') ...
+
+
+Essentially an `interface` for built-in operators!
+
+
+* But...
+
+Go does not have any of these features. So how can it have any of the behaviors?
+
+Not so fast! We're clever!
+
+"If it bothers you that Go is missing feature X, please forgive us and investigate the features that Go does have."
+
+.link https://golang.org/doc/faq Go FAQ
+
+
+* Optional Arguments in Go
+
+    func Build(required string, optional ...int) {
+        if len(optional) > 0 {
+            ...
+        }
+    }
+
+    Build("x")
+    Build("y", 1)
+    Build("z", 1, 2, 3) // uhoh
+
+
+* Named Parameters in Go with Structs
+
+    type Config struct {
+        Jobs int
+        Prefix string
+    }
+
+    func New(conf Config) {}
+
+    New(Config{Jobs: 1})
+    New(Config{Jobs: 1, Prefix: "foo"})
+
+But what about defaults? Acceptable ranges?
+
+
+* Named Parameters in Go with Interfaces
+
+    type Config struct{ jobs int }
+
+    type Modifier interface {
+        Modify(*Config) error
+    }
+
+    type numJob int
+
+    func (nj numJob) Modify(conf *Config) error {
+        conf.jobs = int(nj) // Defaults and bounds can be set here
+        return nil
+    }
+
+    func NumberOfJobs(n int) numJob { return numJob(n) }
+
+    func New(args ...Modifier) (conf Config, err error) {
+        for _, arg := range args {
+            if err = arg.Modify(&conf); err != nil {
+                return
+            }
+        }
+        return
+    }
+
+
+* Named Parameters in Go with Interfaces cont.
+
+    New(NumberOfJobs(1))
+
+    New(NumberOfJobs(1), NumberOfJobs(2))
+
+But we can still repeat values! We didn't fix anything!
+
+Sure, we'll just return a runtime error on duplicates and clearly note the issue in the documentation.
+
+
+* What About Special Methods?
+
+"Regarding operator overloading, it seems more a convenience than an absolute requirement. Again, things are simpler without it."
+
+.link https://golang.org/doc/faq Anti-Fun Police AKA the Go FAQ
+
+
+* Welcome to the Semantic Treehouse of Horrors
+
+Just because we can, doesn't mean we should.
+
+Why focus on the feature? It's really the behavior we care about!
+
+
+* A Literal Tangent
+
+Are we writing English? Should we be?
+
+Or is it math?
+
+<Insert argument about the percentage that computer science is English versus Math - the Ruby and Haskell coders may start fighting - they should take it outside>
+
+
+* An Opinion That Will Get Me In Trouble
+
+Code should choose a grammar and be consistent
+
+Such as English:
+
+*Subject*-*Verb*-*(optional*Direct*Object)*
+
+    1 + 2
+    A.add(B)
+    user.IsAuthenticated()
+
+Or Polish Notation:
+
+*Verb*-*Subject*-*(optional*Direct*Object)*
+
+    + 1 2
+    add(A, B)
+    IsAuthenticated(user)
+
+
+* A Brief Pause While the Audience Disagrees
+
+If no one disagrees, I will provide counter-examples myself
+
+- The standard library isn't consistent, why should I be?
+- I'm a Computer Scientist, not a Bard!
+- I use an IDE
+
+* Functions Are Our Verbs
+
+Understanding the purpose of a function should not require previous knowledge of:
+
+- The type signature
+- The surrounding program
+
+
+* Dangers of an Inconsistent Grammar
+
+English sets a bad precedent with distinguishing nouns from verbs
+
+- Pool, mine, bolt, draft, jam, bark...
+
+If our program's grammar is inconsistent we can lose track of verbs, especially when passing callables
+
+    Pass(pool) // wat
+
+
+* It's About Reducing Complexity
+
+"Different signatures was occasionally useful but that it could also be confusing and fragile in practice."
+
+.link https://golang.org/doc/faq Go FAQ
+
+
+* More Constructors, Without Duplication
+
+Constructors are just functions (that's not just a statement about Go)
+
+    type User struct{ ... }
+
+    NewUser(email string) (user User) {
+        user.Email = email
+    }
+
+    NewAdmin(email string) User {
+        user := NewUser(email)
+        user.IsAdmin = true
+        return user
+    }
+
+
+Or in a package namespaced 'users'
+
+    users.New("email@example.com")
+
+    users.NewAdmin("email@example.com")
+
+
+* An Engineer's Counter-Argument
+
+"If it ain't broke, it doesn't have enough features yet." - Scott Adams
+
+I'll have 200 constructors!
+
+Then that's the complexity of your program, don't hide it
+
+
+* We're Not Playing Golf
+
+More code can improve readability without increasing complexity
+
+    type Issue struct {
+        Closed time.Time
+    }
+
+    func (issue Issue) IsOpen() bool {
+        return issue.Closed.IsZero()
+    }
+
+    func (issue Issue) IsClosed() bool {
+        return !issue.IsOpen()
+    }
+
+
+* Avoid the Boolean Trap
+
+    type Issue struct {}
+
+    func (issue Issue) Validate() error {
+        ...
+    }
+
+    func (issue Issue) Save(validate bool) error {
+        if validate {
+            if err := issue.Validate(); err != nil {
+                return err
+            }
+        }
+        ...
+    }
+
+
+* Avoid the Boolean Trap cont.
+
+    issue.Save(false)
+
+.image /img/no_idea.jpeg
+
+
+* Let's Bike-shed
+
+
+I have an IDE! It auto-completes! Begone savages!
+
+Do we write with tooling in mind?
+
+
+* The True Name of Things
+
+It could be clarified with a named parameter...
+
+    issue.Save(validate=true)
+
+You could give it a new function name (you taught us that, right?)
+
+    issue.ValidateThenSave()
+    issue.ValidateAndMaybeSave()
+    issue.FullSave() // See documentation
+
+Or maybe these functions shouldn't be together?
+
+Continue bike-shedding...
