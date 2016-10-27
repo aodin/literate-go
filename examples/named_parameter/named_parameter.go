@@ -19,7 +19,7 @@ func (nj numJob) Modify(conf *Config) error {
 
 func NumberOfJobs(n int) numJob { return numJob(n) }
 
-func New(args ...Modifier) (conf Config, err error) {
+func Create(args ...Modifier) (conf Config, err error) {
 	for _, arg := range args {
 		if err = arg.Modify(&conf); err != nil {
 			return
@@ -29,5 +29,5 @@ func New(args ...Modifier) (conf Config, err error) {
 }
 
 func main() {
-	fmt.Println(New(NumberOfJobs(1), NumberOfJobs(2)))
+	fmt.Println(Create(NumberOfJobs(1), NumberOfJobs(2)))
 }

@@ -117,10 +117,10 @@ Not so fast! We're clever! And we've been given permission to screw around:
         Prefix string
     }
 
-    func New(conf Config) {}
+    func Create(conf Config) {}
 
-    New(Config{Jobs: 1})
-    New(Config{Jobs: 1, Prefix: "foo"})
+    Create(Config{Jobs: 1})
+    Create(Config{Jobs: 1, Prefix: "foo"})
 
 But what about defaults? Acceptable ranges?
 
@@ -142,7 +142,7 @@ But what about defaults? Acceptable ranges?
 
     func NumberOfJobs(n int) numJob { return numJob(n) }
 
-    func New(args ...Modifier) (conf Config, err error) {
+    func Create(args ...Modifier) (conf Config, err error) {
         for _, arg := range args {
             if err = arg.Modify(&conf); err != nil {
                 return
@@ -154,9 +154,9 @@ But what about defaults? Acceptable ranges?
 
 * Named Parameters in Go with Interfaces cont.
 
-    New(NumberOfJobs(1))
+    Create(NumberOfJobs(1))
 
-    New(NumberOfJobs(1), NumberOfJobs(2))
+    Create(NumberOfJobs(1), NumberOfJobs(2))
 
 But we can still repeat values! We didn't fix anything!
 
@@ -253,13 +253,13 @@ Constructors are functions (that's not just a statement about Go)
 
     type User struct{ ... }
 
-    NewUser(email string) (user User) {
+    CreateUser(email string) (user User) {
         user.Email = email
         // Some complex operation beyond setters
     }
 
-    NewAdmin(email string) User {
-        user := NewUser(email)
+    CreateAdmin(email string) User {
+        user := CreateUser(email)
         user.IsAdmin = true
         return user
     }
@@ -267,9 +267,9 @@ Constructors are functions (that's not just a statement about Go)
 
 Or in a package namespaced 'users'
 
-    users.New("email@example.com")
+    users.Create("email@example.com")
 
-    users.NewAdmin("email@example.com")
+    users.CreateAdmin("email@example.com")
 
 
 * An Engineer's Lament
@@ -353,7 +353,7 @@ It could be clarified with a named parameter...
 
     issue.Save(validate=true)
 
-You could give it a new function name (you taught us that, right?)
+You could give it a different function name (you taught us that, right?)
 
     issue.ValidateThenSave()
     issue.ValidateAndMaybeSave()
